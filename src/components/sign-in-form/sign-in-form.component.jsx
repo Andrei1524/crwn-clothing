@@ -38,11 +38,10 @@ const SignInForm = () => {
   const handleSignInWithEmailAndPassword = async (event) => {
     event.preventDefault();
     try {
-      const response = await handleAuthSignInWithEmailAndPassword(
+      const { user } = await handleAuthSignInWithEmailAndPassword(
         email,
         password
       );
-      console.log(response);
       resetFormFields();
     } catch (error) {
       console.log(error.code);
