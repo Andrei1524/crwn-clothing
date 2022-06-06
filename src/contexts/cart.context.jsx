@@ -16,22 +16,53 @@ const addCartItem = (cartItems, productToAdd) => {
   return [...cartItems, { ...productToAdd, quantity: 1 }];
 };
 
+const removeCartItem = (cartItems, productToRemove) => {
+  let foundItemIndex = cartItems.indexOf(productToRemove);
+
+  cartItems.splice(foundItemIndex, 1);
+
+  return [...cartItems];
+};
+
+const decrementItemQuantity = (cartItems, productToDecrement) => {
+  let foundItemIndex = cartItems.indexOf(productToDecrement);
+
+  cartItems[foundItemIndex].quantity -= 1;
+
+  if (cartItems[foundItemIndex].quantity <= 0) {
+    return removeCartItem(cartItems, productToDecrement);
+  }
+  return [...cartItems];
+};
+
 export const CartContext = createContext({
   isCartDropdownOpen: null,
   toggleCartDropdown: () => {},
   cartItems: [],
   addItemToCart: () => {},
+  removeItemFromCart: () => {},
+  decrementItemQuantityFromCart: () => {},
   cartCount: 0,
   setCartCount: () => {},
+  cartTotal: 0,
 });
 
 export const CartProvider = ({ children }) => {
   const [isCartDropdownOpen, toggleCartDropdown] = useState(false);
   const [cartItems, setCartItems] = useState([]);
   const [cartCount, setCartCount] = useState(0);
+  const [cartTotal, setCartTotal] = useState(0);
 
-  const addItemToCart = (productToAdd) => {
-    setCartItems(addCartItem(cartItems, productToAdd));
+  const addItemToCart = (productToAdd, actionType) => {
+    setCartItems(addCartItem(cartItems, productToAdd, actionType));
+  };
+
+  const removeItemFromCart = (productToRemove) => {
+    setCartItems(removeCartItem(cartItems, productToRemove));
+  };
+
+  const decrementItemQuantityFromCart = (productToDecrement) => {
+    setCartItems(decrementItemQuantity(cartItems, productToDecrement));
   };
 
   useEffect(() => {
@@ -42,12 +73,23 @@ export const CartProvider = ({ children }) => {
     setCartCount(newCartCount);
   }, [cartItems]);
 
+  useEffect(() => {
+    const newCartTotal = cartItems.reduce((acc, currentVal) => {
+      return acc + currentVal.price * currentVal.quantity;
+    }, 0);
+
+    setCartTotal(newCartTotal);
+  }, [cartItems]);
+
   const value = {
     isCartDropdownOpen,
     toggleCartDropdown,
     addItemToCart,
+    removeItemFromCart,
+    decrementItemQuantityFromCart,
     cartItems,
     cartCount,
+    cartTotal,
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
